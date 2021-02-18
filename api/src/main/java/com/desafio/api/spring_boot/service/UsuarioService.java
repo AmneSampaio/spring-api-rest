@@ -28,8 +28,9 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public List<Usuario> getAllUsers() {
-        return this.usuarioRepository.findAll();
+
+    public ResponseEntity<List<Usuario>> getAllUsers() {
+        return new ResponseEntity<List<Usuario>>(this.usuarioRepository.findAll(), HttpStatus.OK);
     }
 
     public ResponseEntity<Usuario> getUsuario(String token) {
@@ -46,7 +47,7 @@ public class UsuarioService {
         }
     }
 
-    public ResponseEntity<Usuario> addNewUsuario(UsuarioDTO usuarioDTO) {
+    public ResponseEntity<Usuario> addNewUsuario(UsuarioDTO usuarioDTO, String role) {
 
         Optional<Usuario> usuarioByEmail = usuarioRepository.findUsuarioByEmail(usuarioDTO.getEmail());
         Optional<Usuario> usuarioByName = usuarioRepository.findUsuarioByName(usuarioDTO.getName());
@@ -62,14 +63,27 @@ public class UsuarioService {
         String encoded = EncryptPasswordUtility.EncondePassword(usuarioDTO.getPassword());
         usuarioDTO.setPassword(encoded);
 
-        Usuario novoUsuario = new Usuario(usuarioDTO);
+        Usuario novoUsuario = new Usuario(usuarioDTO, role);
         usuarioRepository.save(novoUsuario);
 
         return new ResponseEntity<Usuario>(novoUsuario, HttpStatus.OK);
 
     }
 
-    public ResponseEntity<Usuario> loginUsuario(@NotNull UsuarioEmailPasswordDTO usuarioDTO) throws UserNotFoundException, PasswordNotFoundException {
+    public ResponseEntity<Usuario> addNewAdmin(
+            UsuarioDTO usuarioDTO, String token) {
+
+        Optional<Usuario> usuarioAVerificar = usuarioRepository.findUsuarioByToken(UUID.fromString(token));
+
+        if (usuarioAVerificar.isPresent() && usuarioAVerificar.get().getRole().equals("admin")) {
+            return this.addNewUsuario(usuarioDTO, "admin");
+        } else {
+            throw new UserNotFoundException(
+                    "Usuário e/ou senha inválidos");
+        }
+    }
+
+    public ResponseEntity<Usuario> loginUsuario(@NotNull UsuarioEmailPasswordDTO usuarioDTO, String role) throws UserNotFoundException, PasswordNotFoundException {
 
         Optional<Usuario> verificaEmailLogin = usuarioRepository.findUsuarioByEmail(usuarioDTO.getEmail());
 
@@ -104,6 +118,17 @@ public class UsuarioService {
 
     }
 
+    public ResponseEntity<Usuario> loginAdmin(@NotNull UsuarioEmailPasswordDTO usuarioDTO) throws UserNotFoundException, PasswordNotFoundException {
+        Optional<Usuario> verificaEmailLoginAdmin = usuarioRepository.findUsuarioByEmail(usuarioDTO.getEmail());
+
+        if (verificaEmailLoginAdmin.isPresent() && verificaEmailLoginAdmin.get().getRole().equals("admin")) {
+            return this.loginUsuario(usuarioDTO, "admin");
+        } else {
+            throw new UserNotFoundException(
+                    "Usuário e/ou senha inválidos");
+        }
+
+    }
 
     public ResponseEntity<String> deleteUsuario(String token) {
         Optional<Usuario> usuarioToken = usuarioRepository.findUsuarioByToken(UUID.fromString(token));
@@ -114,14 +139,36 @@ public class UsuarioService {
         }
         usuarioRepository.deleteById(usuarioToken.get().getId());
         return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+    }
 
+    public ResponseEntity<String> deleteAdmin(Long usuarioId, String token) {
+        Optional<Usuario> adminToken = usuarioRepository.findUsuarioByToken(UUID.fromString(token));
+
+
+        if (!adminToken.isPresent()) {
+
+            throw new InvalidTokenException(
+                    "Token inválido");
+        }
+
+            Optional<Usuario> usuarioProcurado = usuarioRepository.findById(usuarioId);
+
+        if (!usuarioProcurado.isPresent()) {
+
+            throw new UserNotFoundException(
+                     "Id inválido");
+        }
+
+        usuarioRepository.deleteById(usuarioProcurado.get().getId());
+        return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
 
 
     }
 
+
     @Transactional
     public ResponseEntity<Usuario> updateUsuario(UsuarioDTO usuarioDTO,
-                              String token) {
+                                                 String token) {
 
         Optional<Usuario> usuarioAVerificar = usuarioRepository.findUsuarioByToken(UUID.fromString(token));
 
@@ -132,7 +179,7 @@ public class UsuarioService {
             List<Telefone> telefone = usuario.getTelefone();
             String password = usuario.getPassword();*/
 
-            if (usuarioDTO.getName().isEmpty() || usuarioDTO.getName().length() <=3) {
+            if (usuarioDTO.getName().isEmpty() || usuarioDTO.getName().length() <= 3) {
 
                 throw new InvalidNameLengthException(
                         "Usuário vazio ou comprimento insuficiente");
@@ -176,6 +223,22 @@ public class UsuarioService {
 
     }
 
+    @Transactional
+    public ResponseEntity<Usuario> updateAdmin(UsuarioDTO usuarioDTO,
+                                                 String token) {
+
+        Optional<Usuario> adminAVerificar = usuarioRepository.findUsuarioByToken(UUID.fromString(token));
+        if (adminAVerificar.isPresent()) {
+
+            return this.updateUsuario(usuarioDTO, token);
+        } else {
+
+            throw new InvalidTokenException(
+                    "Token inválido");
+
+        }
+
+    }
 }
 
 

@@ -18,17 +18,17 @@ public class UsuarioEmailPasswordDTO {
         return this.email;
     }
 
-    public void setEmail(String email) {
+    /*public void setEmail(String email) {
         this.email = email;
-    }
+    }*/
 
     public String getPassword() {
         return this.password;
     }
 
-    public void setPassword(String password) {
+ /*   public void setPassword(String password) {
         this.password = password;
     }
-
+*/
 
 }

@@ -1,6 +1,5 @@
 package com.desafio.api.spring_boot.usuario;
 
-//import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import javax.persistence.*;
 
@@ -8,13 +7,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-/*@JsonPropertyOrder({"id",
-                    "name",
-                    "email",
-                    "password",
-                    "criacaoUsuario",
-                    "modificacaoUsuario",
-                    "ultimoLoginUsuario"})*/
 @Entity
 public class Usuario {
 
@@ -27,29 +19,38 @@ public class Usuario {
     private LocalDateTime modificacaoUsuario;
     private LocalDateTime ultimoLoginUsuario;
     private UUID token;
-
+    private String role;
     @OneToMany(targetEntity = Telefone.class,cascade = CascadeType.ALL)
     private List<Telefone> telefone;
+
+
+
 
     public Usuario() {
         super();
     }
 
-    public Usuario(UsuarioDTO usuarioDTO) {
+    public Usuario(UsuarioDTO usuarioDTO, String role) {
         this(usuarioDTO.getName(),
-             usuarioDTO.getEmail(), usuarioDTO.getPassword(), usuarioDTO.getTelefone());
+             usuarioDTO.getEmail(),
+             usuarioDTO.getPassword(),
+             usuarioDTO.getTelefone(),
+             role);
+
 
     }
 
     public Usuario(String name,
                    String email,
                    String password,
-                   List<Telefone> telefone) {
+                   List<Telefone> telefone,
+                   String role) {
 
         this.name = name;
         this.email = email;
         this.password = password;
         this.telefone = telefone;
+        this.role = role;
         LocalDateTime agora = LocalDateTime.now();
         this.criacaoUsuario = agora;
         this.modificacaoUsuario = agora;
@@ -59,14 +60,6 @@ public class Usuario {
 
     public long getId() {
         return this.Id;
-    }
-
-    public void setId(long id) {
-        this.Id = id;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public void setName(String name) {
@@ -89,12 +82,37 @@ public class Usuario {
         this.password = password;
     }
 
-    public List<Telefone> getTelefone() {
-        return this.telefone;
-    }
-
     public void setTelefone(List<Telefone> telefone) {
         this.telefone = telefone;
+    }
+
+    public void setModificacaoUsuario(LocalDateTime modificacaoUsuario) {
+        this.modificacaoUsuario = modificacaoUsuario;
+    }
+
+    public void setUltimoLoginUsuario(LocalDateTime ultimoLoginUsuario) {
+        this.ultimoLoginUsuario = ultimoLoginUsuario;
+    }
+
+    public void setToken(UUID token) {
+        this.token = token;
+    }
+
+    public String getRole() {
+        return this.role;
+    }
+
+/*
+    public void setId(long id) {
+        this.Id = id;
+    }*/
+
+    public String getName() {
+        return name;
+    }
+
+    public List<Telefone> getTelefone() {
+        return this.telefone;
     }
 
     public LocalDateTime getCriacaoUsuario() {
@@ -112,24 +130,16 @@ public class Usuario {
     public UUID getToken() {
         return this.token;
     }
-
-    public void setModificacaoUsuario(LocalDateTime modificacaoUsuario) {
-        this.modificacaoUsuario = modificacaoUsuario;
+/*
+    public void setRole(String role) {
+        this.role = role;
     }
-
-    public void setUltimoLoginUsuario(LocalDateTime ultimoLoginUsuario) {
-        this.ultimoLoginUsuario = ultimoLoginUsuario;
-    }
-
-    public void setToken(UUID token) {
-        this.token = token;
-    }
-
+    */
     @Override
     public String toString() {
         return "Usuario{" +
-                "  Id='" + this.Id + '\'' +
-                "  name='" + this.name + '\'' +
+                ", id='" + this.Id + '\'' +
+                ", name='" + this.name + '\'' +
                 ", email='" + this.email + '\'' +
                 ", password='" + this.password + '\'' +
                 ", telefone='" + this.telefone +  '\'' +

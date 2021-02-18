@@ -13,7 +13,7 @@ public class UsuarioDTO {
     public UsuarioDTO() {
         super();
     }
-
+ 
 
     public UsuarioDTO(String name,
                       String email,
@@ -27,23 +27,21 @@ public class UsuarioDTO {
 
     }
 
-
-
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+   /* public void setName(String name) {
         this.name = name;
-    }
+    }*/
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
+/*    public void setEmail(String email) {
         this.email = email;
-    }
+    }*/
 
     public String getPassword() {
         return password;
@@ -57,9 +55,11 @@ public class UsuarioDTO {
         return this.telefone;
     }
 
+/*
     public void setTelefone(List<Telefone> telefone) {
         this.telefone = telefone;
     }
+*/
 
 
 
