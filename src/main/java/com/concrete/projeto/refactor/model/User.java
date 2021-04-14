@@ -7,6 +7,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -26,6 +27,15 @@ public class User {
     @CPF
     @Column(unique = true, nullable = false)
     private String cpf;
+    @NotBlank(message = "campo login não pode ser nulo")
+    @Column(nullable = false, unique = true)
+    @Size(min = 5, max = 10)
+    private String login;
+    @NotBlank(message = "campo senha não pode ser nulo")
+    @Column(nullable = false)
+    private String senha;
+    @Column(nullable = false)
+    private Date dataNascimento;
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private List<Phone> phone;
@@ -41,23 +51,48 @@ public class User {
     public User() {
     }
 
-    public User(String name, String email, String cpf, List<Phone> phone, List<Address> address) {
-        this.name = name;
-        this.email = email;
-        this.cpf = cpf;
-        this.phone = phone;
-        this.address = address;
-    }
-
-    /* public User(Long id, String name, String email, String cpf) {
+    public User(Long id,
+                String name,
+                String email,
+                String cpf,
+                String login,
+                String senha,
+                Date dataNascimento,
+                List<Phone> phone,
+                List<Address> address) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.cpf = cpf;
-    } */
+        this.login = login;
+        this.senha = senha;
+        this.dataNascimento = dataNascimento;
+        this.phone = phone;
+        this.address = address;
+    }
 
-    public Long getId(Long id) {
-        return this.id;
+    public User(String name,
+                String email,
+                String cpf,
+                String login,
+                String senha,
+                Date dataNascimento,
+                List<Phone> phone,
+                List<Address> address) {
+
+        this.name = name;
+        this.email = email;
+        this.cpf = cpf;
+        this.login = login;
+        this.senha = senha;
+        this.dataNascimento = dataNascimento;
+        this.phone = phone;
+        this.address = address;
+
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public void setId(Long id) {
@@ -88,6 +123,30 @@ public class User {
         this.cpf = cpf;
     }
 
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
+
+    public Date getDataNascimento() {
+        return dataNascimento;
+    }
+
+    public void setDataNascimento(Date dataNascimento) {
+        this.dataNascimento = dataNascimento;
+    }
+
     public List<Phone> getPhone() {
         return phone;
     }
@@ -111,8 +170,11 @@ public class User {
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
                 ", cpf='" + cpf + '\'' +
+                ", login='" + login + '\'' +
+                ", senha='" + senha + '\'' +
+                ", dataNascimento=" + dataNascimento +
+                ", phone=" + phone +
                 ", address=" + address +
                 '}';
     }
-
 }
