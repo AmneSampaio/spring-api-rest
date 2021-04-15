@@ -1,20 +1,19 @@
 package com.concrete.projeto.refactor.controller;
 
-import com.concrete.projeto.refactor.api.object.ViaCepObject;
-import com.concrete.projeto.refactor.api.object.returnMessage;
 import com.concrete.projeto.refactor.model.Phone;
 import com.concrete.projeto.refactor.model.User;
 import com.concrete.projeto.refactor.repository.UserRepository;
-import com.concrete.projeto.refactor.model.Address;
-import com.concrete.projeto.refactor.service.RestTemplateService;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,10 +25,17 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
+    public static BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    };
+
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<User> findById(@PathVariable("id") Long id) {
         Optional<User> userDB = userRepository.findById(id);
+
+
+
 
         if (!userDB.isPresent()) { return ResponseEntity.notFound().build(); }
 
@@ -43,18 +49,26 @@ public class UserController {
             @ApiResponse(code = 400, message = "An error has occurred creating the user")
     })
     public ResponseEntity<?> create(@RequestBody User user) {
+            user.cryptPassword();
+        return ResponseEntity.ok().body(userRepository.save(user));
+    }
 
-        ViaCepObject viaCepObject = RestTemplateService.getCepViaRestTemplate(user.getAddress().getCep());
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    @ApiResponses( value = {
+            @ApiResponse(code = 201, message = "Successfully"),
+            @ApiResponse(code = 400, message = "An error has occurred creating the user")
+    })
+    public ResponseEntity<?> login(@Valid @NotBlank @NotNull @RequestBody User user) {
+        Optional<User> lookForEmailOnDB = userRepository.findByEmail(user.getEmail());
 
-        if (viaCepObject == null || userRepository.existsByCpfOrLogin(user.getCpf(), user.getLogin())) {
+        if (lookForEmailOnDB.isPresent()) {
 
-            return ResponseEntity.status(400).body(new returnMessage("Invalid CEP or CPF/Login already signed in"));
-        } else {
-            user.getAddress().atualizarComViaCepObject(viaCepObject);
-            // user.criptografarSenha();
-
-            return ResponseEntity.ok().body(userRepository.save(user));
-        }
+            String lookForPasswordCrypt = passwordEncoder().encode(user.getPassword());
+            if (lookForEmailOnDB.get().getEmail().equals(user.getEmail())) {
+                lookForEmailOnDB.get().s
+            }
+        return ResponseEntity.ok().body(userRepository.save(user));
     }
 
     @PutMapping("/{id}")
@@ -73,10 +87,6 @@ public class UserController {
 
         userFoundById.get().setEmail(user.getEmail());
         userFoundById.get().setName(user.getName());
-
-        List<Address> userAllAddresses = userFoundById.get().getAddress();
-        userAllAddresses.add(user.getAddress().get(0));
-        userFoundById.get().setAddress(userAllAddresses);
 
         List<Phone> userAllPhones = userFoundById.get().getPhone();
         userAllPhones.add(user.getPhone().get(0));
@@ -101,9 +111,9 @@ public class UserController {
 
     }
 
-    private boolean validateSignIn(String cpf, String login) throws Exception {
-        if (userRepository.existsByCpfOrLogin(cpf, login)) {
-            throw new Exception("Cpf already present in the database");
+    private boolean validateSignIn(String email, String login) throws Exception {
+        if (userRepository.existsByEmailOrLogin(email, login)) {
+            throw new Exception("Email already in use.");
         }
         return true;
     }
