@@ -1,19 +1,21 @@
 package com.concrete.projeto.refactor.model;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 public class User {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @NotBlank(message = "Fill field 'name' ")
+    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
+    //@NotBlank(message = "Fill field 'name' ")
     @Column(unique = true, nullable = false)
     @Size(min = 1, max = 10)
     private String name;
@@ -29,33 +31,39 @@ public class User {
     @JoinColumn(name = "user_id")
     private List<Phone> phone;
 
+    private LocalDateTime userSignIn;
+    private LocalDateTime userUpdate;
+    private LocalDateTime lastUserLogin;
+
     public User() {
     }
 
     public User(String name, 
                 String email,
-                String login, 
                 String password,
                 List<Phone> phone) {
         this.name = name;
         this.email = email;
-        this.login = login;
         this.password = password;
         this.phone = phone;
     }
 
-    public User(Long id,
+
+
+    public User(UUID id,
                 String name,
                 String email,
-                String login,
                 String password,
                 List<Phone> phone) {
         this.id = id;
         this.name = name;
         this.email = email;
-        this.login = login;
         this.password = password;
         this.phone = phone;
+        LocalDateTime now = LocalDateTime.now();
+        this.userSignIn = now;
+        this.userUpdate = now;
+        this.lastUserLogin = now;
     }
 
     public User(String email,
@@ -64,11 +72,11 @@ public class User {
         this.password = password;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -94,12 +102,12 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
-        cryptPassword();
+        //cryptPassword();
     }
 
-    public void cryptPassword() {
+   /* public void cryptPassword() {
         this.password =  new BCryptPasswordEncoder().encode(password);
-    }
+    }*/
 
     public List<Phone> getPhone() {
         return phone;
@@ -107,6 +115,26 @@ public class User {
 
     public void setPhone(List<Phone> phone) {
         this.phone = phone;
+    }
+
+    public LocalDateTime getUserSignIn() {
+        return userSignIn;
+    }
+
+    public LocalDateTime getUserUpdate() {
+        return userUpdate;
+    }
+
+    public void setUserUpdate(LocalDateTime userUpdate) {
+        this.userUpdate = userUpdate;
+    }
+
+    public LocalDateTime getLastUserLogin() {
+        return lastUserLogin;
+    }
+
+    public void setLastUserLogin(LocalDateTime lastUserLogin) {
+        this.lastUserLogin = lastUserLogin;
     }
 
     @Override
@@ -117,8 +145,9 @@ public class User {
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
                 ", phone=" + phone +
+                ", userSignIn=" + userSignIn +
+                ", userUpdate=" + userUpdate +
+                ", lastUserLogin=" + lastUserLogin +
                 '}';
     }
-
-
 }
